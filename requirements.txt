@@ -1,0 +1,10 @@
+flask==3.0.3
+newspaper3k==0.2.8
+transformers==4.44.2
+torch==2.4.1
+requests==2.32.3
+beautifulsoup4==4.12.3
+nltk==3.9.1
+langdetect==1.0.9
+gTTS==2.5.3
+rake-nltk==1.0.6
