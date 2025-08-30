@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📰 Smart News Summarizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #EFDFC5, #f9f9f9);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 280px;
+      background: #380F17;
+      color: #EFDFC5;
+      padding: 20px 0;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo {
+      padding: 0 20px 30px;
+      border-bottom: 1px solid rgba(239, 223, 197, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      color: #EFDFC5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-menu {
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #EFDFC5;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background: rgba(239, 223, 197, 0.1);
+      border-left-color: #8F0B13;
+    }
+
+    .nav-item.active {
+      background: rgba(143, 11, 19, 0.2);
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      width: 20px;
+    }
+
+    .theme-toggle-container {
+      padding: 20px;
+      border-top: 1px solid rgba(239, 223, 197, 0.2);
+    }
+
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .theme-switch input { display: none; }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #4C4F54;
+      border-radius: 24px;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #EFDFC5;
+      border-radius: 50%;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #8F0B13;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: #252B2B;
+      color: #EFDFC5;
+      padding: 15px 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    /* Input Form */
+    .input-section {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(56, 15, 23, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .input-form {
+      display: flex;
+      gap: 15px;
+      align-items: end;
+    }
+
+    .input-group {
+      flex: 1;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #252B2B;
+      font-weight: 500;
+    }
+
+    .url-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #EFDFC5;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .language-select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #EFDFC5;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .url-input:focus, .language-select:focus {
+      outline: none;
+      border-color: #8F0B13;
+      box-shadow: 0 0 0 3px rgba(143, 11, 19, 0.1);
+    }
+
+    .submit-btn {
+      padding: 12px 25px;
+      background: linear-gradient(135deg, #8F0B13, #380F17);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(143, 11, 19, 0.3);
+    }
+
+    /* Summary Section */
+    .summary-section {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(56, 15, 23, 0.1);
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #EFDFC5;
+    }
+
+    .summary-title {
+      color: #252B2B;
+      font-size: 1.3rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+
+    .copy-btn {
+      background: #252B2B;
+      color: #EFDFC5;
+    }
+
+    .copy-btn:hover {
+      background: #4C4F54;
+    }
+
+    .download-btn {
+      background: #8F0B13;
+      color: white;
+    }
+
+    .download-btn:hover {
+      background: #380F17;
+    }
+
+    .pdf-btn {
+      background: linear-gradient(135deg, #252B2B, #4C4F54);
+      color: white;
+    }
+
+    .pdf-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(76, 79, 84, 0.3);
+    }
+
+    /* Summary Content */
+    .summary-content {
+      line-height: 1.6;
+    }
+
+    .summary-section-title {
+      color: #380F17;
+      font-size: 1.1rem;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .summary-list li {
+      margin: 8px 0;
+      padding: 10px 15px;
+      background: linear-gradient(135deg, rgba(239, 223, 197, 0.3), rgba(239, 223, 197, 0.1));
+      border-radius: 8px;
+      border-left: 4px solid #8F0B13;
+    }
+
+    .placeholder-text {
+      text-align: center;
+      color: #4C4F54;
+      font-size: 1.1rem;
+      padding: 50px 20px;
+    }
+
+    /* History Page */
+    .history-container {
+      display: none;
+    }
+
+    .history-container.active {
+      display: block;
+    }
+
+    .history-item {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(56, 15, 23, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .history-item:hover {
+      transform: translateX(5px);
+      border-left-color: #8F0B13;
+      box-shadow: 0 6px 20px rgba(143, 11, 19, 0.15);
+    }
+
+    .history-url {
+      color: #252B2B;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .history-date {
+      color: #4C4F54;
+      font-size: 0.9rem;
+    }
+
+    .history-summary-preview {
+      color: #380F17;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
+
+    /* Dark Theme */
+    body.dark-theme {
+      background: linear-gradient(135deg, #252B2B, #380F17);
+    }
+
+    body.dark-theme .input-section,
+    body.dark-theme .summary-section,
+    body.dark-theme .history-item {
+      background: #4C4F54;
+      color: #EFDFC5;
+    }
+
+    body.dark-theme .top-bar {
+      background: #380F17;
+    }
+
+    body.dark-theme .url-input {
+      background: #252B2B;
+      color: #EFDFC5;
+      border-color: #4C4F54;
+    }
+
+    body.dark-theme .language-select {
+      background: #252B2B;
+      color: #EFDFC5;
+      border-color: #4C4F54;
+    }
+
+    body.dark-theme .summary-title,
+    body.dark-theme .history-url {
+      color: #EFDFC5;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 250px;
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1000;
+        height: 100%;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        width: 100%;
+      }
+
+      .input-form {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .input-group {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="logo">
+      <h1>📰 NewsSum</h1>
+    </div>
+    
+    <div class="nav-menu">
+      <div class="nav-item active" onclick="showHome()">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="showHistory()">
+        <span class="nav-icon">📚</span>
+        <span>History</span>
+      </div>
+    </div>
+
+    <div class="theme-toggle-container">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>🌙</span>
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="page-title" id="page-title">Smart News Summarizer</div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      <!-- Home Page -->
+      <div id="home-page">
+        <!-- Input Section -->
+        <div class="input-section">
+          <form class="input-form" onsubmit="handleSubmit(event)">
+            <div class="input-group">
+              <label for="url">Enter News Article URL:</label>
+              <input type="url" id="url" class="url-input" placeholder="https://example.com/news-article" required>
+            </div>
+            <div class="input-group" style="min-width: 150px;">
+              <label for="language">Summary Language:</label>
+              <select id="language" class="language-select">
+                <option value="en"> English</option>
+                <option value="ta"> Tamil</option>
+              </select>
+            </div>
+            <button type="submit" class="submit-btn">
+              <span>🚀</span>
+              <span>Summarize</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+          <div class="summary-header">
+            <h2 class="summary-title">📄 Article Summary</h2>
+            <div class="action-buttons">
+              <button class="action-btn copy-btn" onclick="copySummary()">
+                <span>📋</span>
+                <span>Copy</span>
+              </button>
+              <button class="action-btn download-btn" onclick="downloadSummary()">
+                <span>💾</span>
+                <span>Download</span>
+              </button>
+              <button class="action-btn pdf-btn" onclick="downloadPDF()">
+                <span>📑</span>
+                <span>PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="summary-content" id="summary-content">
+            <div class="placeholder-text">
+              Enter a news article URL above and click "Summarize" to get started! ✨
+            </div>
+          </div>
+          <button onclick="speakSummary()">🔊 Speak</button>
+          <audio id="player" controls style="display:none;"></audio>
+          {% if audio_file %}
+            <h3>Listen to Summary:</h3>
+            <audio controls>
+              <source src="{{ audio_file }}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- History Page -->
+      <div id="history-page" class="history-container">
+        <div id="history-list">
+          <!-- History items will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <script>
+  let summaryHistory = [];
+  let currentSummary = null;
+
+  // Navigation
+  function showHome() {
+    document.getElementById('home-page').style.display = 'block';
+    document.getElementById('history-page').style.display = 'none';
+    document.getElementById('page-title').textContent = 'Smart News Summarizer';
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.nav-item')[0].classList.add('active');
+  }
+
+  function showHistory() {
+    document.getElementById('home-page').style.display = 'none';
+    document.getElementById('history-page').style.display = 'block';
+    document.getElementById('page-title').textContent = 'Summary History';
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.nav-item')[1].classList.add('active');
+    renderHistory();
+  }
+
+  // Handle form submission
+  function handleSubmit(event) {
+    event.preventDefault();
+    const url = document.getElementById('url').value;
+    const language = document.getElementById('language').value;
+    fetch('/summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url, language: language })
+    })
+    getFlaskSummary(url, language);
+  }
+  // Fetch summary from Flask backend
+  function getFlaskSummary(url, language) {
+  const summaryContent = document.getElementById('summary-content');
+  summaryContent.innerHTML = `<div style="text-align:center; padding: 30px;"><span style="font-size: 2rem;">⏳</span><br>Analyzing article...</div>`;
+
+  fetch('/summary', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: url, language: language })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Failed to fetch summary");
+    return response.json();
+  })
+  .then(data => {
+    // Adapts to your summary structure:
+    const abstractive = data.summary || data.abstractive || [];
+    const extractive = data.extractive || [];
+    currentSummary = {
+      url: url,
+      language: language,
+      date: new Date().toISOString(),
+      abstractive: abstractive,
+      extractive: extractive
+    };
+    renderSummary(currentSummary);
+
+    summaryHistory.unshift(currentSummary);
+    if (summaryHistory.length > 50) summaryHistory.pop();
+    saveHistory();
+  })
+  .catch(error => {
+    summaryContent.innerHTML = `<div style="text-align:center; color:#8F0B13;">Error: Could not summarize this article.<br>${error.message}</div>`;
+  });
+}
+
+
+  // Simulate summarization (replace with actual API call)
+  function simulateSummarization(url, language) {
+    const summaryContent = document.getElementById('summary-content');
+    const languageNames = {
+      'en': 'English', 
+      'ta': 'Tamil'
+    };
+    
+    summaryContent.innerHTML = `<div style="text-align: center; padding: 30px;"><span style="font-size: 2rem;">⏳</span><br>Analyzing article in ${languageNames[language]}...</div>`;
+    
+    setTimeout(() => {
+      // Generate language-appropriate mock summaries
+      const mockSummaries = {
+        'en': {
+          abstractive: [
+            "• The article provides an in-depth analysis of recent advancements in artificial intelligence, highlighting how new algorithms are transforming healthcare diagnostics and patient care.",
+            "• It explores the financial sector's adoption of AI-driven tools for fraud detection and risk management, with case studies from leading banks.",
+            "• Experts interviewed in the article discuss the ethical challenges posed by rapid AI deployment, emphasizing the need for transparent regulatory frameworks and ongoing oversight."
+          ],
+          extractive: [
+            "• AI technology has seen unprecedented growth in the past year, with major breakthroughs in natural language processing and computer vision.",
+            "• Healthcare applications, such as automated diagnosis and personalized treatment plans, show the most promising results according to recent studies.",
+            "• Regulatory bodies are actively working on comprehensive guidelines to ensure responsible use of AI across industries."
+          ]
+        },
+        'ta': {
+          abstractive: [
+            "• இந்த கட்டுரை செயற்கை நுண்ணறிவில் சமீபத்திய முன்னேற்றங்களை விரிவாக அலசுகிறது, புதிய الگொரிதம்கள் மருத்துவ பரிசோதனைகளையும் நோயாளி பராமரிப்பையும் மாற்றுகின்றன என்பதை எடுத்துக்காட்டுகிறது.",
+            "• நிதி துறையில் மோசடி கண்டறிதல் மற்றும் அபாய மேலாண்மைக்காக AI கருவிகள் பயன்படுத்தப்படுகின்றன, முன்னணி வங்கிகளின் உதாரணங்களுடன்.",
+            "• கட்டுரையில் பேட்டியளித்த நிபுணர்கள், AI விரைவாக பரவுவதால் ஏற்படும் நெறிமுறை சவால்கள் குறித்து பேசுகின்றனர்; தெளிவான ஒழுங்குமுறை கட்டமைப்பும் தொடர்ந்த கண்காணிப்பும் அவசியம் என்கிறார்கள்."
+          ],
+          extractive: [
+            "• AI தொழில்நுட்பம் கடந்த வருடத்தில் முன்னேற்றங்களை கண்டுள்ளது, இயற்கை மொழி செயலாக்கம் மற்றும் கணினி பார்வையில் முக்கிய முன்னேற்றங்கள்.",
+            "• மருத்துவ பயன்பாடுகள், தானாக கண்டறிதல் மற்றும் தனிப்பயன் சிகிச்சை திட்டங்கள், சமீபத்திய ஆய்வுகளின்படி மிகச் சிறந்த முடிவுகளை காட்டுகின்றன.",
+            "• ஒழுங்குமுறை அமைப்புகள் AI-ஐ பொறுப்புடன் பயன்படுத்த வழிகாட்டுதல்கள் உருவாக்கப்படுகின்றன."
+          ]
+        },
+      };
+      
+      // Use English as fallback for languages not in mockSummaries
+      const summaryData = mockSummaries[language] || mockSummaries['en'];
+      
+      const mockSummary = {
+        url: url,
+        language: language,
+        date: new Date().toISOString(),
+        abstractive: summaryData.abstractive,
+        extractive: summaryData.extractive
+      };
+      
+      currentSummary = mockSummary;
+      renderSummary(mockSummary);
+      summaryHistory.unshift(mockSummary);
+      if (summaryHistory.length > 50) summaryHistory.pop();
+      saveHistory();
+    }, 2000);
+  }
+
+  // Render summary
+  function renderSummary(summary) {
+    const content = document.getElementById('summary-content');
+    let html = `
+      <div class="summary-section-title">
+        <span>🤖</span>
+        <span>AI Generated Summary</span>
+      </div>
+      <ul class="summary-list">
+        ${summary.abstractive.map(item => `<li>${item}</li>`).join('')}
+      </ul>
+    `;
+    if (summary.extractive && summary.extractive.length > 0) {
+      html += `
+        <div class="summary-section-title">
+          <span>📌</span>
+          <span>Key Highlights</span>
+        </div>
+        <ul class="summary-list">
+          ${summary.extractive.map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      `;
+    }
+    
+html += `<div style="margin-top:20px; text-align:center;">
+         <select id="lang-select" style="padding:8px; border-radius:8px; border:1px solid #ccc; margin-right:10px;">
+           <option value="en">English</option>
+           <option value="ta">Tamil</option>
+          </select>
+          <button onclick="speakSummary(\`${summary.abstractive.join(' ')}\`)" 
+            style="padding:10px 15px; background:#8F0B13; color:white; border:none; border-radius:8px; cursor:pointer;">
+            🔊 Speak Summary
+          </button> 
+          <audio id="player" controls style="margin-top:15px; display:none;"></audio>
+        </div>`;    
+
+    content.innerHTML = html;
+  }
+
+  // Render history
+  function renderHistory() {
+    const historyList = document.getElementById('history-list');
+    if (summaryHistory.length === 0) {
+      historyList.innerHTML = `
+        <div class="placeholder-text">
+          No summary history yet. Start by summarizing your first article! 📰
+        </div>
+      `;
+      return;
+    }
+    const historyHTML = summaryHistory.map((item, index) => {
+      const languageFlag = {
+        'en': 'ta'
+      };
+    
+      return `
+        <div class="history-item" onclick="loadHistoryItem(${index})">
+          <div class="history-url">${languageFlag[item.language] || '🌐'} ${item.url}</div>
+          <div class="history-date">${new Date(item.date).toLocaleDateString()}</div>
+          <div class="history-summary-preview">
+            ${item.abstractive[0].substring(0, 100)}...
+          </div>
+        </div>
+      `;
+    }).join('');
+    historyList.innerHTML = historyHTML;
+  }
+
+  // Load history item
+  function loadHistoryItem(index) {
+    const item = summaryHistory[index];
+    currentSummary = item;
+    document.getElementById('url').value = item.url;
+    if (item.language) {
+      document.getElementById('language').value = item.language;
+    }
+    renderSummary(item);
+    showHome();
+  }
+
+  // Copy summary
+  function copySummary() {
+    if (!currentSummary) {
+      alert('No summary to copy!');
+      return;
+    }
+    let text = `Summary for: ${currentSummary.url}\n\n`;
+    text += `AI Generated Summary:\n${currentSummary.abstractive.join('\n')}\n\n`;
+    if (currentSummary.extractive) {
+      text += `Key Highlights:\n${currentSummary.extractive.join('\n')}\n\n`;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Summary copied to clipboard! 📋');
+    });
+  }
+
+  // Download summary as text
+  function downloadSummary() {
+    if (!currentSummary) {
+      alert('No summary to download!');
+      return;
+    }
+    let text = `Summary for: ${currentSummary.url}\n\n`;
+    text += `AI Generated Summary:\n${currentSummary.abstractive.join('\n')}\n\n`;
+    if (currentSummary.extractive) {
+      text += `Key Highlights:\n${currentSummary.extractive.join('\n')}\n\n`;
+    }
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `news-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Download summary as PDF
+  function downloadPDF() {
+    if (!currentSummary) {
+      alert('No summary to download!');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.setTextColor(56, 15, 23);
+    doc.text('News Article Summary', 20, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(76, 79, 84);
+    const splitUrl = doc.splitTextToSize(`Source: ${currentSummary.url}`, 170);
+    doc.text(splitUrl, 20, 35);
+    let yPosition = 50;
+    doc.setFontSize(12);
+    doc.setTextColor(56, 15, 23);
+    doc.text('AI Generated Summary:', 20, yPosition);
+    yPosition += 10;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    currentSummary.abstractive.forEach(item => {
+      const splitText = doc.splitTextToSize(`• ${item}`, 170);
+      doc.text(splitText, 20, yPosition);
+      yPosition += splitText.length * 5 + 5;
+    });
+    yPosition += 10;
+    if (currentSummary.extractive) {
+      doc.setFontSize(12);
+      doc.setTextColor(56, 15, 23);
+      doc.text('Key Highlights:', 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      currentSummary.extractive.forEach(item => {
+        const splitText = doc.splitTextToSize(`• ${item}`, 170);
+        doc.text(splitText, 20, yPosition);
+        yPosition += splitText.length * 5 + 5;
+      });
+      yPosition += 10;
+    }
+    doc.save(`news-summary-${new Date().toISOString().split('T')[0]}.pdf`);
+  }
+
+  // Save/Load history (using in-memory storage)
+  function saveHistory() {
+    // In a real application, you would save to a database
+    // For demo purposes, we're keeping it in memory
+  }
+
+  function loadHistory() {
+    // In a real application, you would load from a database
+    // For demo purposes, we start with empty history
+    summaryHistory = [];
+  }
+
+  // Theme toggle logic
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    let isDarkTheme = false;
+    
+    // Listen for changes
+    if (themeToggle) {
+      themeToggle.addEventListener('change', function() {
+        isDarkTheme = themeToggle.checked;
+        document.body.classList.toggle('dark-theme', isDarkTheme);
+      });
+    }
+    
+    // Initialize UI
+    loadHistory();
+    showHome();
+    renderHistory();
+  });
+</script>
+
+<script>
+  function speakSummary(text) {
+      const lang = document.getElementById("lang-select").value;
+
+      fetch("/speak", {
+          method: "POST",
+          body: new URLSearchParams({ text: text, lang: lang }),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      })
+      .then(res => res.json())
+      .then(data => {
+          if (data.audio_file) {
+              const player = document.getElementById("player");
+              player.src = data.audio_file;
+              player.style.display = "block";
+              player.play();
+          }
+      });
+  }
+</script>
+</body>
+</html>
