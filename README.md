@@ -9,6 +9,7 @@ The main goal of this project is to demonstrate the practical use of AI models, 
 ---
 
 Features
+
 1.Fetch and parse news articles from URLs  
 2.Abstractive summarization (BART / mT5 multilingual models)  
 3.Extractive summarization (important sentences)  
