@@ -1,23 +1,24 @@
-# 📰 News Summarizer
+Project Overview
 
-A Flask-based web app that fetches news articles from a given URL, generates **AI-powered summaries** (abstractive + extractive), extracts key topics, and even reads the summary aloud using **gTTS (Google Text-to-Speech)**.
+This project is a web-based News Summarizer developed using Flask and Natural Language Processing (NLP) techniques.
+The application accepts a news article URL, extracts the content, and generates a concise summary using AI models.
+It also supports Tamil and English news articles and can read the summarized content aloud using text-to-speech.
 
----
-
-## ✨ Features
-- 🌐 Fetch and parse news articles from URLs  
-- 🤖 Abstractive summarization (BART / mT5 multilingual models)  
-- 📌 Extractive summarization (important sentences)  
-- 🔑 Key topic extraction (RAKE or fallback frequency analysis)  
-- 🗣️ Text-to-speech support (English + Tamil)  
-- 🕒 Stores recent URL history in session  
-- 🎨 Dark/Light theme toggle with history dropdown  
+The main goal of this project is to demonstrate the practical use of AI models, multilingual NLP, and web development in solving a real-world problem.
 
 ---
 
-## 🚀 Setup & Run
+Features
+1.Fetch and parse news articles from URLs  
+2.Abstractive summarization (BART / mT5 multilingual models)  
+3.Extractive summarization (important sentences)  
+4.Key topic extraction (RAKE or fallback frequency analysis)  
+5.Text-to-speech support (English + Tamil)  
+6.Stores recent URL history in session  
+7.Dark/Light theme toggle with history dropdown  
 
-### 1. Clone the repository
+---
+Clone the repository
 ```bash
 git clone https://github.com/kamalikaprabakaran/News-Summarizer.git
 cd news-summarizer
